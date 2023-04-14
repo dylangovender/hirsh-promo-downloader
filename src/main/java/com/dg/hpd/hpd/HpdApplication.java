@@ -5,6 +5,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class HpdApplication {
@@ -14,10 +17,38 @@ public class HpdApplication {
 		Document doc = getDoc(mainURL);
 		ArrayList<String> links = getMainPageLinks(doc);
 		links.remove("https://www.hirschs.co.za/specials-and-promotions/inactive/clearance-sale/clearance-sale-in-store/carnival");
-		ArrayList<String> imageURLs = getImages(links);
+		ArrayList<String> imageURLs = getImageURLs(links);
+		saveImages(imageURLs);
 	}
 
-	public static ArrayList<String> getImages(ArrayList<String> links) {
+	public static void saveImages(ArrayList<String> imageURLs) {
+		String saveDir = "D:\\IdeaProjects\\hirsh-promo-downloader\\target\\images\\";
+		try {
+			for(String imageURL : imageURLs) {
+				String[] tokens = imageURL.split("/");
+				String fileName = tokens[tokens.length-1];
+				String savePath = saveDir + fileName;
+
+				URL url = new URL(imageURL);
+				BufferedInputStream in = new BufferedInputStream(url.openStream());
+				FileOutputStream out = new FileOutputStream(savePath);
+
+				byte[] buffer = new byte[1024];
+				int bytesRead = 0;
+				while ((bytesRead = in.read(buffer, 0, 1024)) != -1) {
+					out.write(buffer, 0, bytesRead);
+				}
+				out.close();
+				in.close();
+				System.out.println("Image saved: " + fileName + " with path: " + savePath);
+			}
+
+		} catch (Exception e) {
+			System.out.println("Error downloading image: " + e.getMessage());
+		}
+	}
+
+	public static ArrayList<String> getImageURLs(ArrayList<String> links) {
 		ArrayList<String> imageURLs = new ArrayList<>();
 		for(String link : links) {
 			Document doc = getDoc(link);

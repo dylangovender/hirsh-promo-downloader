@@ -10,9 +10,23 @@ import java.util.ArrayList;
 public class HpdApplication {
 
 	public static void main(String[] args) {
-		Document doc = getPage();
+		String mainURL = "https://www.hirschs.co.za/specials-and-promotions/clearance-sale";
+		Document doc = getDoc(mainURL);
 		ArrayList<String> links = getMainPageLinks(doc);
-		System.out.println(links);
+		links.remove("https://www.hirschs.co.za/specials-and-promotions/inactive/clearance-sale/clearance-sale-in-store/carnival");
+		ArrayList<String> imageURLs = getImages(links);
+	}
+
+	public static ArrayList<String> getImages(ArrayList<String> links) {
+		ArrayList<String> imageURLs = new ArrayList<>();
+		for(String link : links) {
+			Document doc = getDoc(link);
+			Elements images = doc.select("img[data-element=desktop_image][src*=A4], img[data-element=desktop_image][src*=A42],img[data-element=desktop_image][src*=A43],img[data-element=desktop_image][src*=A44],img[data-element=desktop_image][src*=A45]");
+			for (Element image : images) {
+				imageURLs.add(image.absUrl("src"));
+			}
+		}
+		return imageURLs;
 	}
 
 	public static ArrayList<String> getMainPageLinks(Document doc) {
@@ -24,8 +38,7 @@ public class HpdApplication {
 		return strLinks;
 	}
 
-	public static Document getPage() {
-		String url = "https://www.hirschs.co.za/specials-and-promotions/clearance-sale";
+	public static Document getDoc(String url) {
 		Document doc = null;
 		try{
 			doc = Jsoup.connect(url).get();
